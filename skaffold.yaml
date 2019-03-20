@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/salaboy/snomed-ct-consumer:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/salaboy/snomed-ct-consumer:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: snomed-ct-consumer
+        chartPath: charts/snomed-ct-consumer
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/salaboy/snomed-ct-consumer'
+          image.tag: '{{.DIGEST_HEX}}'
